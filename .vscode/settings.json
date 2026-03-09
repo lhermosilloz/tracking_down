@@ -1,0 +1,21 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages"
+    ],
+    "cmake.configureOnOpen": false,
+    "cmake.sourceDirectory": "${workspaceFolder}/src",
+    "terminal.integrated.env.linux": {
+        "ROS_DISTRO": "humble",
+        "AMENT_PREFIX_PATH": "/opt/ros/humble",
+        "CMAKE_PREFIX_PATH": "/opt/ros/humble",
+        "LD_LIBRARY_PATH": "/opt/ros/humble/lib",
+        "PATH": "/opt/ros/humble/bin:${env:PATH}",
+        "PYTHONPATH": "/opt/ros/humble/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:${env:PYTHONPATH}",
+        "RMW_IMPLEMENTATION": "rmw_fastrtps_cpp"
+    }
+}

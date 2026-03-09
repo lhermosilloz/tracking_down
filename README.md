@@ -4,11 +4,51 @@ A ROS2 workspace containing px4_msgs package for PX4 message definitions.
 
 ## Building the Workspace
 
-To build this workspace:
+### Prerequisites
+- ROS2 Humble installed
+- OpenCV (can be installed using the provided `install_opencv.sh` script)
 
-```bash
-colcon build
-```
+### Build Instructions
+1. Source ROS2 environment:
+   ```bash
+   source /opt/ros/humble/setup.bash
+   ```
+
+2. Initialize and update submodules:
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+3. Build the workspace:
+   ```bash
+   colcon build
+   ```
+
+4. Source the workspace:
+   ```bash
+   source install/setup.bash
+   ```
+
+## VSCode Setup for ROS2 Development
+
+This workspace is pre-configured for VSCode with ROS2 support. The following files are included:
+
+- `.vscode/c_cpp_properties.json` - C++ IntelliSense configuration with ROS2 include paths
+- `.vscode/tasks.json` - Build tasks for colcon
+- `.vscode/settings.json` - ROS2 environment configuration
+
+### Required VSCode Extensions
+- **C/C++ Extension Pack** (`ms-vscode.cpptools-extension-pack`)
+- **CMake Tools** (`ms-vscode.cmake-tools`)
+- **Python** (`ms-python.python`)
+
+### First-time Setup
+1. Open this workspace in VSCode
+2. Install the recommended extensions when prompted
+3. Run **Terminal > Run Task > colcon: build** to generate compile commands
+4. Press `Ctrl+Shift+P` and run **C/C++: Reload IntelliSense Database**
+
+The `#include <rclcpp/rclcpp.hpp>` should now be recognized by VSCode's IntelliSense.
 
 ## Troubleshooting
 
