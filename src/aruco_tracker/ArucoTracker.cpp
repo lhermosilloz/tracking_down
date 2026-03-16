@@ -2,7 +2,7 @@
 #include <sstream>
 
 ArucoTrackerNode::ArucoTrackerNode() : Node("aruco_tracker_node") {
-    RCLCPP_INFO(this->get_logger(), "ArUco Tracker Node initialized");
+    RCLCPP_INFO(this->get_logger(), "ArUco Tracker Node initialized!");
 
     loadParameters();
 
@@ -27,7 +27,7 @@ ArucoTrackerNode::ArucoTrackerNode() : Node("aruco_tracker_node") {
 void ArucoTrackerNode::loadParameters() {
     declare_parameter<int>("aruco_id", 0);
     declare_parameter<int>("dictionary", 2);
-    declare_parameter<int>("marker_size", 0.5);
+    declare_parameter<double>("marker_size", 0.5);
 
     get_parameter("aruco_id", _param_aruco_id);
     get_parameter("dictionary", _param_dictionary);
@@ -125,7 +125,8 @@ void ArucoTrackerNode::image_callback(const sensor_msgs::msg::Image::SharedPtr m
         out_msg.image =cv_ptr->image;
         _image_pub->publish(*out_msg.toImageMsg().get());
 
-    } catch (const cv_bridge::Exception& e) {
+    } 
+    catch (const cv_bridge::Exception& e) {
         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
     }
 }
