@@ -67,8 +67,8 @@ void ArucoTrackerNode::image_callback(const sensor_msgs::msg::Image::SharedPtr m
                 std::vector<cv::Point3f> objectPoints = {
                     cv::Point3f(-half_size, half_size, 0),  // Top left
                     cv::Point3f(half_size, half_size, 0),  // Top right
-                    cv::Point3f(-half_size, -half_size, 0),  // Bottom left
-                    cv::Point3f(half_size, -half_size, 0)   // Bottom right
+                    cv::Point3f(half_size, -half_size, 0),   // Bottom right
+                    cv::Point3f(-half_size, -half_size, 0)  // Bottom left
                 };
 
                 // PnP solver to estimate pose
@@ -122,7 +122,7 @@ void ArucoTrackerNode::image_callback(const sensor_msgs::msg::Image::SharedPtr m
         cv_bridge::CvImage out_msg;
         out_msg.header = msg->header;
         out_msg.encoding = sensor_msgs::image_encodings::BGR8;
-        out_msg.image =cv_ptr->image;
+        out_msg.image = cv_ptr->image;
         _image_pub->publish(*out_msg.toImageMsg().get());
 
     } 
