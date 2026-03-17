@@ -31,6 +31,37 @@ private:
     struct ArucoTag {
         // Init poisition with NaN values
         Eigen::Vector3d position = Eigen::Vector3d::Constant(std::numeric_limits<double>::quiet_NaN());
+        Eigen::Quaterniond orientation;
+        rclcpp::Time timestamp;
+
+        bool valid() { return timestamp.nanoseconds() > 0; };
     };
 
+    void loadParameters();
+
+    ArucoTag getTagWorld(const ArucoTag& tag);
+
+    enum class State {
+        Idle,
+        Search,     // Search for tag using pattern search
+        Approach,   // Approach tag using position control
+        Descend,
+        Finished
+    };
+
+    // ros2
+    rclcpp::Node& _node;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr _target_pose_sub;
+
+    // Parameters
+    float _param_descent_vel = {};
+    float _param_vel_p_gain = {};
+    float _param_vel_i_gain = {};
+    float _param_max_velocity = {};
+    float _param_target_timeout = {};
+    float _param_delta_position = {};
+    float _param_delta_velocity = {};
+
+    float _vel_x_integral {};
+    float _vel_y_integral {};
 };
