@@ -41,6 +41,10 @@ private:
 
     ArucoTag getTagWorld(const ArucoTag& tag);
 
+    Eigen::Vector2f calculateVelocitySetpointXY();
+    bool checkTargetTimeout();
+    bool positionReached(const Eigen::Vector3f& target) const;
+
     enum class State {
         Idle,
         Search,     // Search for tag using pattern search
@@ -49,9 +53,39 @@ private:
         Finished
     };
 
+    void switchToState(State state);
+    std::string stateName(State state);
+
     // ros2
     rclcpp::Node& _node;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr _target_pose_sub;
+    rclcpp::Subscription<px4_msgs::msg::VehicleLandDetected>::SharedPtr _vehicle_land_detected_sub;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr _target_pose_world_pub;
+
+    // px4_ros2_cpp
+    std::shared_ptr<px4_ros2::OdometryLocalPosition> _vehicle_local_position;
+    std::shared_ptr<px4_ros2::OdometryAttitude> _vehicle_attitude;
+    std::shared_ptr<px4_ros2::TrajectorySetpointType> _trajectory_setpoint;
+
+    // Data
+    State _state = State::Search;
+    bool _search_started = false;
+
+    ArucoTag _tag;
+    float _approach_altitude = {};
+
+    // Land detection
+    bool _land_detected = false;
+    bool _target_lost_prev = true;
+
+    // Waypoints for search pattern
+    std::vector<Eigen::Vector3f> _search_waypoints;
+
+    // Search pattern generation
+    void generateSearchWaypoints();
+
+    // Search pattern index
+    int _search_waypoint_index = 0;
 
     // Parameters
     float _param_descent_vel = {};
