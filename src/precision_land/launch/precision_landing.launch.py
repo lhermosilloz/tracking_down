@@ -13,6 +13,13 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        # For VOXL2-Based stacks, we need to run the voxl_mpa_to_ros2_node to conver the MPA output to ROS2 messages
+        # Node(
+        #     package='voxl_mpa_to_ros2',
+        #     executable='voxl_mpa_to_ros2_node',
+        #     name='voxl_mpa',
+        #     output='screen'
+        # ),
         # Bridge camera image from Gazebo to ROS2
         Node(
             package='ros_gz_bridge',
