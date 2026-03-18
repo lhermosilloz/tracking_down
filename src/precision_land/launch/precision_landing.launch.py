@@ -13,7 +13,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        enable_viz_arg,
         # Bridge camera image from Gazebo to ROS2
         Node(
             package='ros_gz_bridge',
@@ -21,6 +20,9 @@ def generate_launch_description():
             name='image_bridge',
             arguments=[
                 '/world/aruco/model/x500_mono_cam_down_0/link/camera_link/sensor/imager/image@sensor_msgs/msg/Image@gz.msgs.Image'
+            ],
+            remappings=[
+                ('/world/aruco/model/x500_mono_cam_down_0/link/camera_link/sensor/imager/image', '/camera')
             ],
             output='screen',
         ),
@@ -32,31 +34,20 @@ def generate_launch_description():
             arguments=[
                 '/world/aruco/model/x500_mono_cam_down_0/link/camera_link/sensor/imager/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo'
             ],
-            output='screen',
-        ),
-        # Bridge processed image from ROS2 to Gazebo for visualization
-        Node(
-            package='ros_gz_bridge',
-            executable='parameter_bridge',
-            name='image_proc_bridge',
-            arguments=[
-                '/image_proc@sensor_msgs/msg/Image[gz.msgs.Image'
+            remappings=[
+                ('/world/aruco/model/x500_mono_cam_down_0/link/camera_link/sensor/imager/camera_info', '/camera_info')
             ],
-            parameters=[{
-                'qos_overrides./image_proc.subscription.reliability': 'best_effort',
-                'qos_overrides./image_proc.publisher.reliability': 'best_effort'
-            }],
             output='screen',
         ),
         # Aruco tracker node
         Node(
             package='aruco_tracker',
-            executable='aruco_tracker',
+            executable='aruco_tracker_node',
             name='aruco_tracker',
-            output='screen',
-            parameters=[
-                PathJoinSubstitution([FindPackageShare('aruco_tracker'), 'cfg', 'params.yaml'])
-            ]
+            output='screen'
+            # parameters=[
+            #     PathJoinSubstitution([FindPackageShare('aruco_tracker'), 'cfg', 'params.yaml'])
+            # ]
         ),
         # Precision landing node
         Node(
@@ -67,13 +58,5 @@ def generate_launch_description():
             parameters=[
                 PathJoinSubstitution([FindPackageShare('precision_land'), 'cfg', 'params.yaml'])
             ]
-        ),
-        # Gazebo visualization node (simulation only)
-        Node(
-            package='precision_land_viz',
-            executable='tag_pose_visualizer',
-            name='tag_pose_visualizer',
-            output='screen',
-            condition=IfCondition(LaunchConfiguration('enable_gazebo_viz'))
         ),
     ])
