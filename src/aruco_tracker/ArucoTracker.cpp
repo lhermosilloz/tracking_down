@@ -6,11 +6,12 @@ ArucoTrackerNode::ArucoTrackerNode() : Node("aruco_tracker_node") {
 
     loadParameters();
 
-    auto detectorParams = cv::aruco::DetectorParameters();
+    _detectorParams = cv::aruco::DetectorParameters::create();
 
-    auto dictionary = cv::aruco::getPredefinedDictionary(_param_dictionary);
+    _dictionary = cv::aruco::getPredefinedDictionary(_param_dictionary);
 
-    _detector = std::make_unique<cv::aruco::ArucoDetector>(dictionary, detectorParams);
+    // 4.10 Version of OpenCV
+    // _detector = std::make_unique<cv::aruco::ArucoDetector>(dictionary, detectorParams);
 
     // RMW QoS settings
     auto qos = rclcpp::QoS(1).best_effort();
@@ -42,7 +43,9 @@ void ArucoTrackerNode::image_callback(const sensor_msgs::msg::Image::SharedPtr m
         // Detect the markers
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
-        _detector->detectMarkers(cv_ptr->image, corners, ids);
+        // 4.10 Version of OpenCV
+        // _detector->detectMarkers(cv_ptr->image, corners, ids);
+        
         cv::aruco::drawDetectedMarkers(cv_ptr->image, corners, ids);
 
         // Camera matrix and Distortion coefficietns get updated by CameraInfo
@@ -98,11 +101,39 @@ void ArucoTrackerNode::image_callback(const sensor_msgs::msg::Image::SharedPtr m
 
                 // Quaternion from rotation matrix
                 if (rot_mat.type() == CV_64FC1 && rot_mat.rows == 3 && rot_mat.cols == 3) {
-                    cv::Quatd quat = cv::Quatd::createFromRotMat(rot_mat).normalize();
-                    target_pose.pose.orientation.x = quat.x;
-                    target_pose.pose.orientation.y = quat.y;
-                    target_pose.pose.orientation.z = quat.z;
-                    target_pose.pose.orientation.w = quat.w;
+                    double trace = rot_mat.at<double>(0,0) + rot_mat.at<double>(1,1) + rot_mat.at<double>(2,2);
+                    double w, x, y, z;
+                    if (trace > 0) {
+                        double s = 0.5 / sqrt(trace + 1.0);
+                        w = 0.25 / s;
+                        x = (rot_mat.at<double>(2,1) - rot_mat.at<double>(1,2)) * s;
+                        y = (rot_mat.at<double>(0,2) - rot_mat.at<double>(2,0)) * s;
+                        z = (rot_mat.at<double>(1,0) - rot_mat.at<double>(0,1)) * s;
+                    } else if (rot_mat.at<double>(0,0) > rot_mat.at<double>(1,1) && rot_mat.at<double>(0,0) > rot_mat.at<double>(2,2)) {
+                        double s = 2.0 * sqrt(1.0 + rot_mat.at<double>(0,0) - rot_mat.at<double>(1,1) - rot_mat.at<double>(2,2));
+                        w = (rot_mat.at<double>(2,1) - rot_mat.at<double>(1,2)) / s;
+                        x = 0.25 * s;
+                        y = (rot_mat.at<double>(0,1) + rot_mat.at<double>(1,0)) / s;
+                        z = (rot_mat.at<double>(0,2) + rot_mat.at<double>(2,0)) / s;
+                    } else if (rot_mat.at<double>(1,1) > rot_mat.at<double>(2,2)) {
+                        double s = 2.0 * sqrt(1.0 + rot_mat.at<double>(1,1) - rot_mat.at<double>(0,0) - rot_mat.at<double>(2,2));
+                        w = (rot_mat.at<double>(0,2) - rot_mat.at<double>(2,0)) / s;
+                        x = (rot_mat.at<double>(0,1) + rot_mat.at<double>(1,0)) / s;
+                        y = 0.25 * s;
+                        z = (rot_mat.at<double>(1,2) + rot_mat.at<double>(2,1)) / s;
+                    } else {
+                        double s = 2.0 * sqrt(1.0 + rot_mat.at<double>(2,2) - rot_mat.at<double>(0,0) - rot_mat.at<double>(1,1));
+                        w = (rot_mat.at<double>(1,0) - rot_mat.at<double>(0,1)) / s;
+                        x = (rot_mat.at<double>(0,2) + rot_mat.at<double>(2,0)) / s;
+                        y = (rot_mat.at<double>(1,2) + rot_mat.at<double>(2,1)) / s;
+                        z = 0.25 * s;
+                    }
+                    // normalize
+                    double norm = sqrt(w*w + x*x + y*y + z*z);
+                    target_pose.pose.orientation.w = w / norm;
+                    target_pose.pose.orientation.x = x / norm;
+                    target_pose.pose.orientation.y = y / norm;
+                    target_pose.pose.orientation.z = z / norm;
 
                     _target_pose_pub->publish(target_pose);
                 }

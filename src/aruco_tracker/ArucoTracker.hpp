@@ -7,7 +7,6 @@
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-#include <opencv2/core/quaternion.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 class ArucoTrackerNode : public rclcpp::Node {
@@ -30,6 +29,13 @@ private:
 
     // Data to get
     std::unique_ptr<cv::aruco::ArucoDetector> _detector;
+    
+    // Older Modal AI version of OpenCV
+    // _detectorParams = cv::aruco::DetectorParameters::create();
+    // _dictionary = cv::aruco::getPredefinedDictionary(_param_dictionary);
+    cv::Ptr<cv::aruco::DetectorParameters> _detectorParams;
+    cv::Ptr<cv::aruco::Dictionary> _dictionary;
+
     cv::Mat _camera_matrix;
     cv::Mat _dist_coeffs;
 
